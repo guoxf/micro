@@ -158,6 +158,20 @@ func (sc *ServiceConfig) LoadFromEnv() {
 	}
 }
 
+func (sc *ServiceConfig) LoadDefault() {
+	if sc.ClientRequestTimeout == "" {
+		sc.ClientRequestTimeout = defaultClientRequestTimeout
+	}
+
+	if sc.ClientPoolSize == 0 {
+		sc.ClientPoolSize = defaultClientPoolSize
+	}
+
+	if sc.ClientPoolTTL == "" {
+		sc.ClientPoolTTL = defaultClientPoolTTL
+	}
+}
+
 func NewServiceConfig(configPath string) *ServiceConfig {
 	if configPath == "" {
 		panic("config path is empty!")
@@ -173,5 +187,6 @@ func NewServiceConfig(configPath string) *ServiceConfig {
 		panic(err)
 	}
 	sc.LoadFromEnv()
+	sc.LoadDefault()
 	return &sc
 }
