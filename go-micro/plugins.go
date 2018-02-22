@@ -11,6 +11,7 @@ import (
 	"github.com/micro/go-micro/selector/cache"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-micro/transport"
+	"github.com/micro/go-plugins/registry/zookeeper"
 
 	thttp "github.com/micro/go-micro/transport/http"
 	"github.com/micro/go-plugins/broker/kafka"
@@ -32,8 +33,9 @@ var (
 	}
 
 	DefaultRegistries = map[string]func(...registry.Option) registry.Registry{
-		"consul": consul.NewRegistry,
-		"mdns":   mdns.NewRegistry,
+		"consul":    consul.NewRegistry,
+		"mdns":      mdns.NewRegistry,
+		"zookeeper": zookeeper.NewRegistry,
 	}
 
 	DefaultSelectors = map[string]func(...selector.Option) selector.Selector{
