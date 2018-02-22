@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-log/log"
+	gomicro "github.com/micro/go-micro"
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
@@ -19,7 +20,7 @@ import (
 	"github.com/micro/go-micro/transport"
 )
 
-func NewService(sc *ServiceConfig, opts ...Option) Service {
+func NewService(sc *ServiceConfig, opts ...gomicro.Option) gomicro.Service {
 	s := &service{
 		sc:   sc,
 		opts: newOptions(sc, opts...),
@@ -27,7 +28,7 @@ func NewService(sc *ServiceConfig, opts ...Option) Service {
 	return s
 }
 
-func newOptions(sc *ServiceConfig, opts ...Option) Options {
+func newOptions(sc *ServiceConfig, opts ...gomicro.Option) gomicro.Options {
 	b := newBroker(sc)
 
 	t := newTransport(sc)
@@ -46,7 +47,7 @@ func newOptions(sc *ServiceConfig, opts ...Option) Options {
 	c = &clientWrapper{
 		c,
 		metadata.Metadata{
-			HeaderPrefix + "From-Service": sc.ServerName,
+			gomicro.HeaderPrefix + "From-Service": sc.ServerName,
 		},
 	}
 
@@ -57,7 +58,7 @@ func newOptions(sc *ServiceConfig, opts ...Option) Options {
 		server.Registry(r),
 	)
 
-	opt := Options{
+	opt := gomicro.Options{
 		Broker:    b,
 		Client:    c,
 		Server:    s,
@@ -71,7 +72,7 @@ func newOptions(sc *ServiceConfig, opts ...Option) Options {
 		if err != nil {
 			panic(fmt.Sprintf("failed to parse RegisterInterval: %s", sc.RegisterInterval))
 		}
-		opts = append(opts, RegisterInterval(d))
+		opts = append(opts, gomicro.RegisterInterval(d))
 	}
 
 	if sc.RegisterTTL != "" {
@@ -79,7 +80,7 @@ func newOptions(sc *ServiceConfig, opts ...Option) Options {
 		if err != nil {
 			panic(fmt.Sprintf("failed to parse RegisterTTL: %s", sc.RegisterTTL))
 		}
-		opts = append(opts, RegisterTTL(d))
+		opts = append(opts, gomicro.RegisterTTL(d))
 	}
 
 	for _, o := range opts {
@@ -225,7 +226,7 @@ func newServer(sc *ServiceConfig, opts ...server.Option) server.Server {
 
 type service struct {
 	sc   *ServiceConfig
-	opts Options
+	opts gomicro.Options
 }
 
 func (s *service) run(exit chan bool) {
@@ -249,9 +250,9 @@ func (s *service) run(exit chan bool) {
 	}
 }
 
-func (s *service) Init(opts ...Option) {}
+func (s *service) Init(opts ...gomicro.Option) {}
 
-func (s *service) Options() Options {
+func (s *service) Options() gomicro.Options {
 	return s.opts
 }
 
@@ -282,11 +283,11 @@ func (s *service) Start() error {
 		return err
 	}
 
-	// for _, fn := range s.opts.AfterStart {
-	// 	if err := fn(); err != nil {
-	// 		return err
-	// 	}
-	// }
+	for _, fn := range s.opts.AfterStart {
+		if err := fn(); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -294,11 +295,11 @@ func (s *service) Start() error {
 func (s *service) Stop() error {
 	var gerr error
 
-	// for _, fn := range s.opts.BeforeStop {
-	// 	if err := fn(); err != nil {
-	// 		gerr = err
-	// 	}
-	// }
+	for _, fn := range s.opts.BeforeStop {
+		if err := fn(); err != nil {
+			gerr = err
+		}
+	}
 
 	if err := s.opts.Server.Deregister(); err != nil {
 		return err

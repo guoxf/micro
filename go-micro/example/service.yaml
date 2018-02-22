@@ -2,5 +2,5 @@ serverName: go.micro.srv.demo
 serverVersion: 1.0.0
 registerTTL: 10s
 registerInterval: 30s
-registryAddress:
-- 127.0.0.1:8500
+# registryAddress:
+# - 127.0.0.1:8500
