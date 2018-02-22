@@ -160,6 +160,7 @@ func (sc *ServiceConfig) LoadFromEnv() {
 	}
 }
 
+// LoadDefault 加载默认的配置
 func (sc *ServiceConfig) LoadDefault() {
 	if sc.ClientRequestTimeout == "" {
 		sc.ClientRequestTimeout = defaultClientRequestTimeout
@@ -182,6 +183,7 @@ func (sc *ServiceConfig) LoadDefault() {
 	}
 }
 
+// NewServiceConfig 配置顺序:文件->环境变量->默认值
 func NewServiceConfig(configPath string) *ServiceConfig {
 	if configPath == "" {
 		panic("config path is empty!")
