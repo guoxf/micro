@@ -16,6 +16,8 @@ const (
 	defaultClientRetries        = 1
 	defaultClientPoolSize       = 10
 	defaultClientPoolTTL        = "1m"
+	defaultRegisterTTL          = "30s"
+	defaultRegisterInterval     = "10s"
 
 	defaultServer        = "grpc"
 	defaultServerVersion = "1.0.0"
@@ -169,6 +171,14 @@ func (sc *ServiceConfig) LoadDefault() {
 
 	if sc.ClientPoolTTL == "" {
 		sc.ClientPoolTTL = defaultClientPoolTTL
+	}
+
+	if sc.RegisterTTL == "" {
+		sc.RegisterTTL = defaultRegisterTTL
+	}
+
+	if sc.RegisterInterval == "" {
+		sc.RegisterInterval = defaultRegisterInterval
 	}
 }
 
