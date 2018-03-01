@@ -66,21 +66,27 @@ func newOptions(sc *ServiceConfig, opts ...gomicro.Option) gomicro.Options {
 		Registry:  r,
 		Context:   context.Background(),
 	}
+	var registerInterval, registerTTL time.Duration
+	var err error
 
 	if sc.RegisterInterval != "" {
-		d, err := time.ParseDuration(sc.RegisterInterval)
+		registerInterval, err = time.ParseDuration(sc.RegisterInterval)
 		if err != nil {
 			panic(fmt.Sprintf("failed to parse RegisterInterval: %s", sc.RegisterInterval))
 		}
-		opts = append(opts, gomicro.RegisterInterval(d))
+		opts = append(opts, gomicro.RegisterInterval(registerInterval))
 	}
 
 	if sc.RegisterTTL != "" {
-		d, err := time.ParseDuration(sc.RegisterTTL)
+		registerTTL, err = time.ParseDuration(sc.RegisterTTL)
 		if err != nil {
 			panic(fmt.Sprintf("failed to parse RegisterTTL: %s", sc.RegisterTTL))
 		}
-		opts = append(opts, gomicro.RegisterTTL(d))
+		opts = append(opts, gomicro.RegisterTTL(registerTTL))
+	}
+
+	if registerTTL < registerInterval {
+		panic(fmt.Sprintf("ttl(%v) must gt interval(%v)", registerTTL, registerInterval))
 	}
 
 	for _, o := range opts {
