@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-
 	"github.com/micro/go-micro/registry"
+	"github.com/micro/go-micro/registry/consul"
 	"github.com/micro/go-plugins/registry/etcd"
 )
 
@@ -13,9 +13,9 @@ func main() {
 	host := flag.String("h", "127.0.0.1:8500", "registry address")
 	serviceName := flag.String("s", "", "service name")
 	flag.Parse()
-	fmt.Println(*registryName, *host)
+	fmt.Println(*registryName, *host, *serviceName)
 	r := newRegistry(*registryName, *host)
-
+	fmt.Println(r.String())
 	if *serviceName != "" {
 		deregisterByServiceName(r, *serviceName)
 		return
@@ -24,6 +24,7 @@ func main() {
 	for {
 		services, err := selectService(r)
 		if err != nil {
+			fmt.Println(err)
 			continue
 		}
 		for i := range services {
@@ -35,7 +36,7 @@ func main() {
 
 func deregisterNode(r registry.Registry, s *registry.Service) {
 	for i, node := range s.Nodes {
-		fmt.Printf("%d. %s %d %s\n", i, node.Address, node.Port, node.Id)
+		fmt.Printf("%d. %s %s\n", i, node.Address, node.Id)
 	}
 	fmt.Println("please select node")
 	var nodeIndex int
@@ -56,7 +57,7 @@ func deregisterNode(r registry.Registry, s *registry.Service) {
 
 func deregisterService(r registry.Registry, s *registry.Service) {
 	for i, node := range s.Nodes {
-		fmt.Printf("%d. deregister %s %d %s\n", i, node.Address, node.Port, node.Id)
+		fmt.Printf("%d. deregister %s %s\n", i, node.Address, node.Id)
 		err := r.Deregister(&registry.Service{
 			Name:    s.Name,
 			Version: s.Version,
@@ -74,6 +75,7 @@ func deregisterByServiceName(r registry.Registry, name string) {
 		fmt.Println(err)
 		return
 	}
+	fmt.Println(services)
 	for i := range services {
 		deregisterService(r, services[i])
 	}
@@ -105,6 +107,6 @@ func newRegistry(name, host string) registry.Registry {
 	case "etcd":
 		return etcd.NewRegistry(opt)
 	default:
-		return registry.NewRegistry(opt)
+		return consul.NewRegistry(opt)
 	}
 }
